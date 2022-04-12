@@ -1,0 +1,399 @@
+<style>
+table { 
+	width: 600px; 
+	border-collapse: collapse; 
+	margin:30px auto;
+	}
+tr:nth-of-type(odd) { 
+	background: #eee; 
+	}
+
+th { 
+	background: #3498db; 
+	color: white; 
+	font-weight: bold; 
+	}
+
+td, th { 
+	padding: 10px; 
+	border: 1px solid #ccc; 
+	text-align: left; 
+	font-size: 18px;
+	}
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+
+	table { 
+	  	width: 100%; 
+	}
+	table, thead, tbody, th, td, tr { 
+		display: block; 
+	}
+	thead tr { 
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+	
+	tr { border: 1px solid #ccc; }
+	
+	td { 
+		border: none;
+		border-bottom: 1px solid #eee; 
+		position: relative;
+		padding-left: 50%; 
+	}
+
+	td:before { 
+		position: absolute;
+		top: 6px;
+		left: 6px;
+		width: 45%; 
+		padding-right: 10px; 
+		white-space: nowrap;
+		content: attr(data-column);
+
+		color: #000;
+		font-weight: bold;
+	}
+
+}
+</style>
+<body style="background-color:antiquewhite;">
+<div class="row" style="background-color:antiquewhite;">
+    <div class="col-md-6">
+        <a href="/spotify/api" style="color: orange;">Click here for connection with spotify</a><br><br>
+        <h2>Search</h2>
+
+        <?php
+        echo $this->tag->form("/spotify/search"); ?>
+
+        <p>
+            <label for="search">Search</label>
+            <?php echo $this->tag->textField("search"); ?>
+        </p>
+        <p>
+            <label for="album">album</label>
+            <?php echo $this->tag->checkField(["album"]); ?> <br>
+
+            <label for="artist">artist</label>
+            <?php echo $this->tag->checkField(["artist"]); ?><br>
+            <label for="playlist">playlist</label>
+
+            <?php echo $this->tag->checkField(["playlist"]); ?><br>
+
+            <label for="track">track</label>
+            <?php echo $this->tag->checkField(["track"]); ?><br>
+
+            <label for="show">show</label>
+            <?php echo $this->tag->checkField(["show"]); ?><br>
+
+            <label for="episode">episode</label>
+            <?php echo $this->tag->checkField(["episode"]); ?>
+
+        </p>
+
+
+        <p>
+            <?php echo $this->tag->submitButton("search"); ?>
+        </p>
+
+        </form>
+    </div>
+    <div class="col-md-6 mt-2">
+        <div class="col-md-6">
+
+            <h3>Create Playlist</h3>
+            <form action="/spotify/createPlaylist" method="POST">
+                <input type="text" name="playlist" placeholder="name"><br>
+                <input type="text" name="description" placeholder="description"><br>
+                <button type="submit" name="submit" style="background-color: orange;">Create Playlist</button>
+            </form>
+        </div>
+        <br><br><br>
+        <div class="col-12">
+            <h3>My Playlists</h3>
+            <table class="table table-image">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($allPlaylists['items'] as $key => $value) {
+                        echo "<tr>
+                            <td>".$key."</td>
+                            <td>".$value['name']."</td>
+                            <td>"; 
+                            echo $this->tag->linkTo(
+                                    [
+                                        'spotify/viewPlaylists?id='.$value['id'],
+                                        'View',
+                                        'class' => 'btn btn-danger'
+                                    ]
+                                    );    
+                        echo "</td>
+                        </tr>";
+                    }
+                    ?>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php
+
+if (isset($tracks)) {
+?>
+    <div class="container">
+        <h2 style="margin-left: 35%;"><b>Tracks</b></h2>
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Artist</th>
+                            <th scope="col">Album</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($tracks['tracks']['items'] as $key => $value) {
+
+                            echo "
+                            <form action='/spotify/add' method='POST'>
+                            <tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+                            foreach ($value['artists'] as $k => $v) {
+                                echo $v['name'] . "<br>";
+                            }
+                            echo "</td>
+                                <td>" . $value['album']['name'] . "</td>
+                                <td>";
+                            
+                            echo '
+                            <input type="hidden" name="uri" value=' . $value['uri'] . '>
+                            <select name="playlist" onchange="submit()">
+                                <option>None</option>';
+                                foreach ($allPlaylists['items'] as $key => $value) {
+
+                                    echo '<option value=' . $value['id'] . '>' . $value["name"] . '</option>';
+                                }
+
+                            echo '
+                            </select> </form>';
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php }
+if (isset($album)) {
+?>
+    <div class="container">
+    <h2 style="margin-left: 35%; margin-top:10px;" ><b>Album</b></h2>
+    <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Album Title</th>
+                            <th scope="col">Artist</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($album['albums']['items'] as $key => $value) {
+                            echo "<tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+                            foreach ($value['artists'] as $k => $v) {
+                                echo $v['name'] . "<br>";
+                            }
+                            echo "</td><td>";
+
+
+                            
+                            echo "</td>      
+                                            </tr>";
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php }
+if (isset($artist)) {
+?>
+    <div class="container">
+    <h2 style="margin-left: 35%; margin-top:10px;" ><b>Artist</b></h2>
+
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Artist</th>
+                            <th scope="col">Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($artist['artists']['items'] as $key => $value) {
+                            echo "<tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+                            if (isset($value["images"][0]["url"])) {
+
+                                echo "<img src='" . $value["images"][0]["url"] . "' height='100px'>";
+                            }
+                            echo "</td>
+                                    <td>";
+
+
+                            
+                            echo "</td>      
+                                            </tr>";
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php }
+if (isset($playlist)) {
+?>
+    <div class="container">
+    <h2 style="margin-left: 35%; margin-top:10px;" ><b>Playlist</b></h2>
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Thumbnail</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($playlist['playlists']['items'] as $key => $value) {
+                            echo "<tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+                            if (isset($value["images"][0]["url"])) {
+
+                                echo "<img src='" . $value["images"][0]["url"] . "' height='100px'>";
+                            }
+
+                            echo "</td><td>" . $value['description'] . "</td>
+                                    ";
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php }
+if (isset($shows)) {
+?>
+    <div class="container">
+    <h2 style="margin-left: 35%; margin-top:10px;" ><b>Shows</b></h2>
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Thumbnail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($shows['shows']['items'] as $key => $value) {
+                            echo "<tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+
+                            if (isset($value["images"][0]["url"])) {
+
+                                echo "<img src='" . $value["images"][0]["url"] . "' height='100px'>";
+                            }
+                            echo "</td><td>";
+                            
+                            echo "</td>      
+                                    </tr>";
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php }
+if (isset($episode)) {
+?>
+    <div class="container">
+    <h2 style="margin-left: 35%; margin-top:10px;" ><b>Episodes</b></h2>
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Thumbnail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($episode['episodes']['items'] as $key => $value) {
+                            echo "<tr>
+                                    <td>.$key.</td>
+                                    <td>" . $value['name'] . "</td>
+                                    <td>";
+
+                            if (isset($value["images"][0]["url"])) {
+
+                                echo "<img src='" . $value["images"][0]["url"] . "' height='100px'>";
+                            }
+                            echo "</td><td>";
+                            
+                            echo "</td>      
+                                    </tr>";
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<?php } ?>
+</body>
