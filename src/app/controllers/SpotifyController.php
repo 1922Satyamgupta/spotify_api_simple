@@ -170,7 +170,7 @@ class SpotifyController extends Controller
         
         return (json_decode($result, true));
     }
-    public function viewPlaylistsAction() {
+    public function allplaylistAction() {
         if ($this->request->get('id')!=null) {
             $playlist_id = $this->request->get('id');
             $url = URL."/$playlist_id/tracks";
